@@ -24,7 +24,7 @@ const PARTY_MEMBERS = [
   { id: '4', name: '별헤는고래', color: '#EF4444' },
   { id: '5', name: '실론티', color: '#166534' },
   { id: '6', name: '려으', color: '#FBBF24' },
-  { id: '7', name: '냥군', color: '#8B5CF6' },
+  { id: '7', name: '냥군', color: '#97a9c3' },
 ];
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
