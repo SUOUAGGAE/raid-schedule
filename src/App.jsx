@@ -20,11 +20,11 @@ const db = getDatabase(app);
 const PARTY_MEMBERS = [
   { id: '1', name: '둅', color: '#3B82F6' },
   { id: '2', name: '툐', color: '#22C55E' },
-  { id: '3', name: '츠끼', color: '#89FEFF' },
+  { id: '3', name: '츠끼', color: '#b2d6fa' },
   { id: '4', name: '별헤는고래', color: '#EF4444' },
   { id: '5', name: '실론티', color: '#166534' },
   { id: '6', name: '려으', color: '#FFB7DE' },
-  { id: '7', name: '냥군', color: '#97a9c3' },
+  { id: '7', name: '냥군', color: '#677eab' },
 ];
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
