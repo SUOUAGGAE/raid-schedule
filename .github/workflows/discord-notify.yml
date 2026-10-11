@@ -1,0 +1,23 @@
+name: Discord Weekly Raid Schedule Alert
+
+on:
+  schedule:
+    - cron: '0 1 * * 4'
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Webhook
+        run: |
+          WEBHOOK_URL="${{ secrets.DISCORD_WEBHOOK_URL }}"
+          RESPONSE=$(curl -s "https://raid-schedule-f1be5-default-rtdb.firebaseio.com/schedules.json")
+          MESSAGE="🛡️ **[얼레벌레네레팟] 이번 주 레이드 일정 안내** 🛡️\n"
+          MESSAGE="${MESSAGE}매주 목요일 정기 일정 체크 시간입니다! 웹사이트에서 참여 가능 여부를 업데이트해 주세요.\n\n"
+          MESSAGE="${MESSAGE}🔗 **일정 확인하기:** https://raid-schedule.vercel.app\n"
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{\"content\": \"$MESSAGE\"}" \
+               $WEBHOOK_URL
+              
