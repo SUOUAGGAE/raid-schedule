@@ -2,22 +2,92 @@ name: Discord Weekly Raid Schedule Alert
 
 on:
   schedule:
+    # 매주 목요일 한국시간 오전 10시 (UTC 기준 목요일 01:00)
     - cron: '0 1 * * 4'
-  workflow_dispatch:
+  workflow_dispatch: # 수동 테스트용
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Discord Webhook
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Calculate and Send Schedule Alert
         run: |
-          WEBHOOK_URL="${{ secrets.DISCORD_WEBHOOK_URL }}"
-          RESPONSE=$(curl -s "https://raid-schedule-f1be5-default-rtdb.firebaseio.com/schedules.json")
-          MESSAGE="🛡️ **[얼레벌레네레팟] 이번 주 레이드 일정 안내** 🛡️\n"
-          MESSAGE="${MESSAGE}매주 목요일 정기 일정 체크 시간입니다! 웹사이트에서 참여 가능 여부를 업데이트해 주세요.\n\n"
-          MESSAGE="${MESSAGE}🔗 **일정 확인하기:** https://raid-schedule.vercel.app\n"
-          curl -H "Content-Type: application/json" \
-               -X POST \
-               -d "{\"content\": \"$MESSAGE\"}" \
-               $WEBHOOK_URL
-              
+          node -e '
+          const https = require("https");
+
+          // 파이어베이스에서 이번 주 일정 데이터 가져오기
+          const url = "https://raid-schedule-f1be5-default-rtdb.firebaseio.com/schedules.json";
+
+          https.get(url, (res) => {
+            let data = "";
+            res.on("data", (chunk) => data += chunk);
+            res.on("end", () => {
+              try {
+                const schedules = JSON.parse(data) || {};
+                
+                // 오늘(목요일) 기준으로 이번 주 목~수 날짜 계산 또는 등록된 날짜 분석
+                // 6인 이상 가능한 날짜 수집
+                const availableDays = [];
+                
+                Object.keys(schedules).forEach(dateStr => {
+                  const dayData = schedules[dateStr] || {};
+                  // true(참석 가능)인 사람 수 계산
+                  const count = Object.values(dayData).filter(v => v === true || v?.available === true).length;
+                  if (count >= 6) {
+                    availableDays.push({ date: dateStr, count });
+                  }
+                });
+
+                let msgContent = "🛡️ **[얼레벌레네레팟] 이번 주 레이드 가능 일정 안내** 🛡️\n\n";
+
+                if (availableDays.length > 0) {
+                  msgContent += "✨ **이번 주 레이드 출발 가능 날짜 (6인 이상):**\n";
+                  availableDays.forEach(item => {
+                    msgContent += `• **${item.date}** : ${item.count}명 가능 ⭕\n`;
+                  });
+                } else {
+                  msgContent += "⚠️ **이번 주는 6인 이상 모인 날짜가 없습니다.**\n";
+                }
+
+                msgContent += "\n🔗 **자세한 일정 확인/수정:** https://raid-schedule.vercel.app";
+
+                // 디스코드 웹훅 전송
+                const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+                if (!webhookUrl) {
+                  console.error("WEBHOOK_URL이 설정되지 않았습니다.");
+                  process.exit(1);
+                }
+
+                const payload = JSON.stringify({ content: msgContent });
+                const urlObj = new URL(webhookUrl);
+
+                const req = https.request({
+                  hostname: urlObj.hostname,
+                  path: urlObj.pathname + urlObj.search,
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Content-Length": Buffer.byteLength(payload)
+                  }
+                }, (res) => {
+                  console.log("전송 완료! 상태 코드:", res.statusCode);
+                });
+
+                req.write(payload);
+                req.end();
+
+              } catch (e) {
+                console.error("데이터 처리 중 에러:", e);
+              }
+            });
+          }).on("error", (err) => {
+            console.error("요청 실패:", err);
+          });
+          '
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
