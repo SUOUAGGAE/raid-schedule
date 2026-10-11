@@ -30,13 +30,11 @@ jobs:
               try {
                 const schedules = JSON.parse(data) || {};
                 
-                // 오늘(목요일) 기준으로 이번 주 목~수 날짜 계산 또는 등록된 날짜 분석
                 // 6인 이상 가능한 날짜 수집
                 const availableDays = [];
                 
                 Object.keys(schedules).forEach(dateStr => {
                   const dayData = schedules[dateStr] || {};
-                  // true(참석 가능)인 사람 수 계산
                   const count = Object.values(dayData).filter(v => v === true || v?.available === true).length;
                   if (count >= 6) {
                     availableDays.push({ date: dateStr, count });
@@ -54,7 +52,7 @@ jobs:
                   msgContent += "⚠️ **이번 주는 6인 이상 모인 날짜가 없습니다.**\n";
                 }
 
-                msgContent += "\n🔗 **자세한 일정 확인/수정:** https://raid-schedule.vercel.app";
+                msgContent += "\n🔗 **자세한 일정 확인/수정:** https://raid-schedule-tau.vercel.app/";
 
                 // 디스코드 웹훅 전송
                 const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
