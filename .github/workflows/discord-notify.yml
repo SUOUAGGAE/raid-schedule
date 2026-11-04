@@ -20,7 +20,6 @@ jobs:
           node -e '
           const https = require("https");
 
-          // 파이어베이스에서 이번 주 일정 데이터 가져오기
           const url = "https://raid-schedule-f1be5-default-rtdb.firebaseio.com/schedules.json";
 
           https.get(url, (res) => {
@@ -30,26 +29,41 @@ jobs:
               try {
                 const schedules = JSON.parse(data) || {};
                 
-                // 6인 이상 가능한 날짜 수집
+                // 1. 오늘(목요일)부터 정확히 7일간(목~수)의 날짜(YYYY-MM-DD) 리스트 생성
+                const targetDates = [];
+                const today = new Date();
+                
+                for (let i = 0; i < 7; i++) {
+                  const d = new Date(today);
+                  d.setDate(today.getDate() + i);
+                  
+                  const year = d.getFullYear();
+                  const month = String(d.getMonth() + 1).padStart(2, "0");
+                  const day = String(d.getDate()).padStart(2, "0");
+                  
+                  targetDates.push(`${year}-${month}-${day}`);
+                }
+
+                // 2. 목요일~다음 주 수요일 기간 내에서 6인 이상인 날짜 필터링
                 const availableDays = [];
                 
-                Object.keys(schedules).forEach(dateStr => {
-                  const dayData = schedules[dateStr] || {};
-                  const count = Object.values(dayData).filter(v => v === true || v?.available === true).length;
-                  if (count >= 6) {
-                    availableDays.push({ date: dateStr, count });
+                targetDates.forEach(dateStr => {
+                  const attendees = schedules[dateStr];
+                  // 웹사이트와 동일하게 배열 형태인지 확인하고 인원수(length) 체크
+                  if (Array.isArray(attendees) && attendees.length >= 6) {
+                    availableDays.push({ date: dateStr, count: attendees.length, members: attendees.join(", ") });
                   }
                 });
 
-                let msgContent = "🛡️ **[얼레벌레네레팟] 이번 주 레이드 가능 일정 안내** 🛡️\n\n";
+                let msgContent = "🛡️ **[얼레벌레네레팟] 이번 주 레이드 가능 일정 안내** 🛡️\n*(기준: 목요일 ~ 다가오는 일주일)*\n\n";
 
                 if (availableDays.length > 0) {
                   msgContent += "✨ **이번 주 레이드 출발 가능 날짜 (6인 이상):**\n";
                   availableDays.forEach(item => {
-                    msgContent += `• **${item.date}** : ${item.count}명 가능 ⭕\n`;
+                    msgContent += `• **${item.date}** : **${item.count}명** 참여 (${item.members}) ⭕\n`;
                   });
                 } else {
-                  msgContent += "⚠️ **이번 주는 6인 이상 모인 날짜가 없습니다.**\n";
+                  msgContent += "⚠️ **이번 주에는 목요일~수요일 사이에 6인 이상 모인 날짜가 없습니다.**\n";
                 }
 
                 msgContent += "\n🔗 **자세한 일정 확인/수정:** https://raid-schedule-tau.vercel.app/";
