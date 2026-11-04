@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, onValue, set } from 'firebase/database';
 
-// 님의 파이어베이스 고유 설정값
+// 파이어베이스 고유 설정값
 const firebaseConfig = {
   apiKey: "AIzaSyCfce0LxqgTJhON8Hn8c-GPbMVvuA6lmE",
   authDomain: "raid-schedule-f1be5.firebaseapp.com",
@@ -18,11 +18,10 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const PARTY_MEMBERS = [
-  { id: '1', name: '둅', color: '#3B82F6' },
+  { id: '1', name: '산화', color: '#F97316' }, // 새로 추가된 멤버
   { id: '2', name: '툐', color: '#22C55E' },
   { id: '3', name: '츠끼', color: '#b2d6fa' },
   { id: '4', name: '별헤는고래', color: '#EF4444' },
-  { id: '5', name: '실론티', color: '#166534' },
   { id: '6', name: '려으', color: '#FFB7DE' },
   { id: '7', name: '냥군', color: '#677eab' },
 ];
@@ -30,7 +29,7 @@ const PARTY_MEMBERS = [
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 export default function App() {
-  const [myNickname, setMyNickname] = useState('둅');
+  const [myNickname, setMyNickname] = useState('산화');
   const [currentMonth, setCurrentMonth] = useState(10);
   const [schedules, setSchedules] = useState({});
 
@@ -138,7 +137,7 @@ export default function App() {
         </div>
 
         {/* 파티원 현황판 */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', marginBottom: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px', marginBottom: '20px' }}>
           {PARTY_MEMBERS.map((member) => (
             <div
               key={member.id}
