@@ -18,7 +18,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const PARTY_MEMBERS = [
-  { id: '1', name: '산화', color: '#F97316' }, // 새로 추가된 멤버
+  { id: '1', name: '산화', color: '#e9cfb3' }, // 새로 추가된 멤버
   { id: '2', name: '툐', color: '#22C55E' },
   { id: '3', name: '츠끼', color: '#b2d6fa' },
   { id: '4', name: '별헤는고래', color: '#EF4444' },
