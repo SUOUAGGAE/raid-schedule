@@ -18,8 +18,8 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const PARTY_MEMBERS = [
-  { id: '1', name: '산화', color: '#e9cfb3' }, // 새로 추가된 멤버
-  { id: '2', name: '툐', color: '#22C55E' },
+  { id: '1', name: '산화', color: '#e9cfb3' },
+  { id: '2', name: '신관놈', color: '#28f1ff' }, // 새로 추가된 멤버
   { id: '3', name: '츠끼', color: '#b2d6fa' },
   { id: '4', name: '별헤는고래', color: '#EF4444' },
   { id: '6', name: '려으', color: '#FFB7DE' },
@@ -30,7 +30,7 @@ const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 export default function App() {
   const [myNickname, setMyNickname] = useState('산화');
-  const [currentMonth, setCurrentMonth] = useState(10);
+  const [currentMonth, setCurrentMonth] = useState(11); // 기본 11월로 설정
   const [schedules, setSchedules] = useState({});
 
   // 파이어베이스에서 실시간 데이터 동기화
@@ -67,9 +67,11 @@ export default function App() {
     return member ? member.color : '#ccc';
   };
 
-  const generateCalendarDays = (year, month) => {
-    const firstDay = new Date(year, month - 1, 1).getDay();
-    const daysInMonth = new Date(year, month, 0).getDate();
+  const generateCalendarDays = (targetMonth) => {
+    // 1월인 경우 2027년, 11~12월인 경우 2026년으로 계산
+    const year = targetMonth === 1 ? 2027 : 2026;
+    const firstDay = new Date(year, targetMonth - 1, 1).getDay();
+    const daysInMonth = new Date(year, targetMonth, 0).getDate();
 
     const days = [];
     for (let i = 0; i < firstDay; i++) {
@@ -81,7 +83,7 @@ export default function App() {
     return days;
   };
 
-  const days = generateCalendarDays(2026, currentMonth);
+  const days = generateCalendarDays(currentMonth);
 
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif', backgroundColor: '#FFF9F0', minHeight: '100vh', boxSizing: 'border-box' }}>
@@ -113,7 +115,7 @@ export default function App() {
           </div>
 
           <div style={{ display: 'flex', gap: '8px' }}>
-            {[10, 11, 12].map((m) => (
+            {[11, 12, 1].map((m) => (
               <button
                 key={m}
                 onClick={() => setCurrentMonth(m)}
@@ -130,7 +132,7 @@ export default function App() {
                   transition: 'all 0.2s'
                 }}
               >
-                {m}월
+                {m}월 {m === 1 ? '(2027)' : ''}
               </button>
             ))}
           </div>
@@ -173,7 +175,8 @@ export default function App() {
                 return <div key={`empty-${idx}`} style={{ minHeight: '90px', background: '#fafafa', borderRadius: '6px' }} />;
               }
 
-              const dateStr = `2026-${String(currentMonth).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+              const year = currentMonth === 1 ? 2027 : 2026;
+              const dateStr = `${year}-${String(currentMonth).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
               const attendees = schedules[dateStr] || [];
               const isMyCommitted = attendees.includes(myNickname);
               const isReady = attendees.length >= 6;
@@ -216,22 +219,4 @@ export default function App() {
                             borderRadius: '4px',
                             backgroundColor: memberColor,
                             color: '#fff',
-                            fontWeight: 'bold',
-                            border: isMe ? '1.5px solid #FF8FAB' : 'none'
-                          }}
-                        >
-                          {name}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-}
+                            fontWeight:
